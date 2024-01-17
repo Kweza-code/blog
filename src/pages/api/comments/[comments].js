@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 import mw from "@/api/mw"
 import { validate } from "@/api/middlewares/validate"
 import { idValidator, commentTextValidator } from "@/utils/validators"
@@ -23,15 +24,21 @@ const handle = mw({
   POST: [
     validate({
       body: {
-        postId: idValidator,
-        text: commentTextValidator,
+        post_id: idValidator,
+        user_id: idValidator,
+        content: commentTextValidator,
       },
     }),
     async ({ models: { CommentModel }, input: { body }, res }) => {
-      const newComment = await CommentModel.query().insert(body)
+      const newComment = await CommentModel.query().insert({
+        post_id: body.post_id,
+        user_id: body.user_id,
+        content: body.content,
+      })
       res.status(201).send(newComment)
     },
   ],
+
   DELETE: [
     validate({
       query: {

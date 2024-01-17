@@ -1,43 +1,42 @@
-import config from "@/config"
-import BaseModel from "@/db/models/BaseModel"
-import { pbkdf2, randomBytes } from "node:crypto"
-import { promisify } from "node:util"
+import { validate } from "@/api/middlewares/validate"
+import mw from "@/api/mw"
+import { emailValidator, passwordValidator } from "@/utils/validators"
 
-const pbkdf2Async = promisify(pbkdf2)
-
-class UserModel extends BaseModel {
-  static tableName = "users"
-
-  static get jsonSchema() {
-    return {
-      type: "object",
-      properties: {
-        id: { type: "integer" },
-        email: { type: "string" },
-        passwordHash: { type: "string" },
-        passwordSalt: { type: "string" },
-        role: { type: "string", default: "user" },
+const handle = mw({
+  POST: [
+    validate({
+      body: {
+        email: emailValidator,
+        password: passwordValidator,
       },
-    }
-  }
+    }),
+    async ({
+      input: {
+        body: { email, password },
+      },
+      models: { UserModel },
+      res,
+    }) => {
+      const user = await UserModel.query().findOne({ email })
 
-  static async hashPassword(
-    password,
-    salt = randomBytes(config.security.password.keylen).toString("hex"),
-  ) {
-    return [
-      (
-        await pbkdf2Async(
-          password,
-          salt + config.security.password.pepper,
-          config.security.password.iterations,
-          config.security.password.keylen,
-          config.security.password.digest,
-        )
-      ).toString("hex"),
-      salt,
-    ]
-  }
-}
+      if (user) {
+        res.send({ result: true })
 
-export default UserModel
+        return
+      }
+
+      const [passwordHash, passwordSalt] =
+        await UserModel.hashPassword(password)
+
+      await UserModel.query().insertAndFetch({
+        email,
+        passwordHash,
+        passwordSalt,
+      })
+
+      res.send({ result: true })
+    },
+  ],
+})
+
+export default handle

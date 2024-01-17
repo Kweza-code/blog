@@ -1,18 +1,18 @@
 import { Model } from "objection"
+import BaseModel from "./BaseModel"
+import UserModel from "./UserModel"
+import CommentModel from "./CommentModel"
 
-class Post extends Model {
+class PostModel extends BaseModel {
   static get tableName() {
     return "posts"
   }
 
   static get relationMappings() {
-    const User = require("./User")
-    const Comment = require("./Comment")
-
     return {
       author: {
         relation: Model.BelongsToOneRelation,
-        modelClass: User,
+        modelClass: UserModel,
         join: {
           from: "posts.user_id",
           to: "users.id",
@@ -20,7 +20,7 @@ class Post extends Model {
       },
       comments: {
         relation: Model.HasManyRelation,
-        modelClass: Comment,
+        modelClass: CommentModel,
         join: {
           from: "posts.id",
           to: "comments.post_id",
@@ -30,4 +30,4 @@ class Post extends Model {
   }
 }
 
-export default Post
+export default PostModel
