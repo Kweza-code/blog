@@ -1,47 +1,47 @@
+/* eslint-disable no-shadow */
+/* eslint-disable padding-line-between-statements */
+import axios from "axios"
 import config from "@/web/config"
-import axios, { AxiosError } from "axios"
 
 export class ApiClientError extends Error {
-  data = null
-
   constructor(err) {
-    super(err)
+    super()
 
-    const {
-      response: { data },
-    } = err
-
-    this.data = data
-
-    if (typeof data === "string") {
-      this.message = data
-
-      return
+    if (err && err.response && err.response.data) {
+      if (typeof err.response.data === "string") {
+        this.message = err.response.data
+      } else {
+        this.message =
+          err.response.data.error?.message ||
+          err.response.data.error ||
+          "An error occurred"
+      }
+    } else {
+      this.message = "An error occurred"
     }
-
-    this.message = data?.error?.message || data?.error || data
   }
 }
-const createApiClient =
-  (method = "GET") =>
-  (...args) => {
-    const client = axios.create({
-      baseURL: config.api.baseUrl,
-    })
+const client = axios.create({
+  baseURL: config.api.baseUrl,
+})
+const handleResponse = (response) => response.data
 
-    return client[method.toLowerCase()](...args)
-      .then(({ data }) => data)
-      .catch((err) => {
-        if (!(err instanceof AxiosError)) {
-          throw err
-        }
-
-        throw new ApiClientError(err)
-      })
+const handleError = (error) => {
+  if (error.response) {
+    throw new ApiClientError(error)
   }
-const apiClient = createApiClient()
-apiClient.post = createApiClient("POST")
-apiClient.patch = createApiClient("PATCH")
-apiClient.delete = createApiClient("DELETE")
+  throw error
+}
+
+const apiClient = {
+  get: (url, config) =>
+    client.get(url, config).then(handleResponse).catch(handleError),
+  post: (url, data, config) =>
+    client.post(url, data, config).then(handleResponse).catch(handleError),
+  patch: (url, data, config) =>
+    client.patch(url, data, config).then(handleResponse).catch(handleError),
+  delete: (url, config) =>
+    client.delete(url, config).then(handleResponse).catch(handleError),
+}
 
 export default apiClient

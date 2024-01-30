@@ -1,103 +1,47 @@
-import { formatDateTimeShort } from "@/utils/formatters"
-import Loader from "@/web/components/ui/Loader"
-import Pagination from "@/web/components/ui/Pagination"
+/* eslint-disable padding-line-between-statements */
 import apiClient from "@/web/services/apiClient"
-import { useMutation, useQuery } from "@tanstack/react-query"
-import { useRouter } from "next/router"
 
 export const getServerSideProps = async ({ query: { page } }) => {
-  const data = await apiClient("/todos", { params: { page } })
-
+  const data = await apiClient.get("/posts", { params: { page } })
   return {
     props: { initialData: data },
   }
 }
-// eslint-disable-next-line max-lines-per-function
+
 const IndexPage = ({ initialData }) => {
-  const { query } = useRouter()
-  const page = Number.parseInt(query.page || 1, 10)
-  const {
-    isFetching,
-    data: {
-      result: todos,
-      meta: { count },
-    },
-    refetch,
-  } = useQuery({
-    queryKey: ["todos", page],
-    queryFn: () => apiClient("/todos", { params: { page } }),
-    initialData,
-    enabled: false,
-  })
-  const { mutateAsync: toggleTodo } = useMutation({
-    mutationFn: (todo) =>
-      apiClient.patch(`/todos/${todo.id}`, {
-        isDone: !todo.isDone,
-      }),
-  })
-  const { mutateAsync: deleteTodo } = useMutation({
-    mutationFn: (todoId) => apiClient.delete(`/todos/${todoId}`),
-  })
-  const handleClickToggle = (id) => async () => {
-    const todo = todos.find(({ id: todoId }) => todoId === id)
-    await toggleTodo(todo)
-    await refetch()
-  }
-  const handleClickDelete = async (event) => {
-    const todoId = Number.parseInt(event.target.getAttribute("data-id"), 10)
-    await deleteTodo(todoId)
-    await refetch()
-  }
+  const posts = initialData || []
 
   return (
-    <div className="relative">
-      {isFetching && <Loader />}
-      <table className="w-full">
-        <thead>
-          <tr>
-            {[
-              "#",
-              "Description",
-              "Done",
-              "Category",
-              "Created At",
-              "",
-              "🗑️",
-            ].map((label) => (
-              <td
-                key={label}
-                className="p-4 bg-slate-300 text-center font-semibold"
-              >
-                {label}
-              </td>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {todos.map(
-            ({ id, description, isDone, createdAt, category: { name } }) => (
-              <tr key={id} className="even:bg-slate-100">
-                <td className="p-4">{id}</td>
-                <td className="p-4">{description}</td>
-                <td className="p-4">{isDone ? "✅" : "❌"}</td>
-                <td className="p-4">{name}</td>
-                <td className="p-4">
-                  {formatDateTimeShort(new Date(createdAt))}
-                </td>
-                <td className="p-4">
-                  <button onClick={handleClickToggle(id)}>Toggle</button>
-                </td>
-                <td className="p-4">
-                  <button data-id={id} onClick={handleClickDelete}>
-                    Delete
-                  </button>
-                </td>
-              </tr>
-            ),
-          )}
-        </tbody>
-      </table>
-      <Pagination count={count} page={page} className="mt-8" />
+    <div className="container mx-auto px-4">
+      {posts.length > 0 ? (
+        posts.map(({ id, author, title, content, is_published }) => (
+          <article key={id} className="mb-8 p-4 shadow-lg rounded-lg bg-white">
+            <h2 className="text-2xl font-bold mb-2">{title}</h2>
+            <p className="text-gray-700">{content}</p>
+            <div className="flex justify-between items-center mt-4">
+              <small className="text-gray-600">
+                {is_published ? "Published" : "Not Published"}
+              </small>
+              <div>
+                <button
+                  className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded mr-2"
+                  onClick={() => console.log(`Edit ${id}`)}
+                >
+                  Edit
+                </button>
+                <button
+                  className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded"
+                  onClick={() => console.log(`Delete ${id}`)}
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          </article>
+        ))
+      ) : (
+        <p>No posts to display.</p>
+      )}
     </div>
   )
 }

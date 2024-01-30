@@ -23,7 +23,7 @@ const data = {
   },
   security: {
     session: {
-      storageKey: "sessionToken",
+      storageKey: "maCleDeSessionUnique",
     },
   },
 }
