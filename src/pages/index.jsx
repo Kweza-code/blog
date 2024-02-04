@@ -1,62 +1,58 @@
-/* eslint-disable padded-blocks */
-/* eslint-disable no-alert */
-/* eslint-disable padding-line-between-statements */
-import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { formatDateTimeShort } from "@/utils/formatters"
+import Loader from "@/web/components/ui/Loader"
 import apiClient from "@/web/services/apiClient"
+import { useMutation, useQuery } from "@tanstack/react-query"
+import { useRouter } from "next/router"
 
 export const getServerSideProps = async () => {
-  let data = []
-
-  try {
-    const response = await apiClient.get("/posts")
-    data = response.data || []
-  } catch (error) {
-    console.error("Erreur lors de la récupération des posts:", error)
-  }
-
+  const data = await apiClient.get("/posts")
   return {
     props: { initialData: data },
   }
 }
 
 const IndexPage = ({ initialData }) => {
-  const queryClient = useQueryClient()
+  const { isFetching, refetch } = useQuery({
+    queryKey: ["posts"],
+    queryFn: () => apiClient.get("/posts"),
+    initialData,
+    enabled: !!initialData,
+  })
 
-  const deletePost = useMutation(
-    (postId) => apiClient.delete(`/posts/${postId}`),
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries(["posts"])
-      },
+  const deleteMutation = useMutation({
+    mutationFn: (postId) => apiClient.delete(`/posts/${postId}`),
+    onSuccess: () => {
+      refetch()
     },
-  )
+  })
 
-  const handleDelete = (postId) => {
-    if (window.confirm("Êtes-vous sûr de vouloir supprimer ce post ?")) {
-      deletePost.mutate(postId)
+  const handleDelete = async (postId) => {
+    if (window.confirm("Are you sure you want to delete this post?")) {
+      await deleteMutation.mutate(postId)
     }
   }
 
+  if (isFetching) return <Loader />
+
+  const posts = refetch.data || initialData
+
   return (
-    <div className="container mx-auto px-4">
-      {initialData.length > 0 ? (
-        initialData.map(({ id, title, content }) => (
-          <article key={id} className="mb-8 p-4 shadow-lg rounded-lg bg-white">
-            <h2 className="text-2xl font-bold mb-2">{title}</h2>
+    <div className="container mx-auto px-4 py-8">
+      <ul className="list-disc space-y-4">
+        {posts.map(({ id, title, content }) => (
+          <li key={id} className="bg-white p-4 rounded-lg shadow">
+            <h3 className="text-xl font-semibold">{title}</h3>
             <p className="text-gray-700">{content}</p>
-            <div className="flex justify-between items-center mt-4">
-              <button
-                className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded"
-                onClick={() => handleDelete(id)}
-              >
-                Delete
-              </button>
-            </div>
-          </article>
-        ))
-      ) : (
-        <p>Aucun post à afficher.</p>
-      )}
+
+            <button
+              className="mt-4 bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+              onClick={() => handleDelete(id)}
+            >
+              Delete
+            </button>
+          </li>
+        ))}
+      </ul>
     </div>
   )
 }
