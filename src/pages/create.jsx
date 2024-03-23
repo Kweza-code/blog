@@ -1,78 +1,70 @@
 import { useState } from "react"
+import { useMutation } from "@tanstack/react-query"
+import apiClient from "@/web/services/apiClient"
+import { useRouter } from "next/router"
 
-const Create = () => {
-  // État pour gérer les entrées du formulaire
+const CreatePage = () => {
   const [title, setTitle] = useState("")
   const [content, setContent] = useState("")
+  const router = useRouter()
 
-  // Gère la soumission du formulaire
+  const createPostMutation = useMutation({
+    mutationFn: (newPost) => apiClient.post("/posts/1", newPost),
+    onSuccess: () => {
+      router.push("/")
+    },
+  })
+
   const handleSubmit = async (event) => {
     event.preventDefault()
-
-    // Préparation des données à envoyer
-    const postData = {
-      title,
-      content,
-    }
-
-    try {
-      // Envoie les données à l'API et attend la réponse
-      const response = await fetch("/api/path-to-your-post-api", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(postData),
-      })
-
-      if (!response.ok) {
-        throw new Error(`Erreur : ${response.status}`)
-      }
-
-      const result = await response.json()
-      console.log(result)
-
-      // Réinitialise le formulaire ou redirige l'utilisateur comme nécessaire
-      setTitle("")
-      setContent("")
-      alert("Post créé avec succès !")
-    } catch (error) {
-      console.error("Échec de la création du post", error)
-      alert("Échec de la création du post")
-    }
+    createPostMutation.mutate({ title, content })
   }
 
   return (
-    <div>
-      <h1>Create Post</h1>
-      <form onSubmit={handleSubmit}>
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-xl font-semibold mb-4">Créer un nouveau post</h1>
+      <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label htmlFor="title">Titre:</label>
-          <br />
+          <label
+            htmlFor="title"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Titre
+          </label>
           <input
-            type="text"
             id="title"
-            name="title"
+            type="text"
+            required
+            className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            required
           />
         </div>
         <div>
-          <label htmlFor="content">Contenu:</label>
-          <br />
+          <label
+            htmlFor="content"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Contenu
+          </label>
           <textarea
             id="content"
-            name="content"
+            required
+            rows={4}
+            className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm"
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            required
           ></textarea>
         </div>
-        <button type="submit">Envoyer</button>
+        <button
+          type="submit"
+          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+        >
+          Créer
+        </button>
       </form>
     </div>
   )
 }
 
-export default Create
+export default CreatePage
