@@ -25,8 +25,8 @@ const Header = () => {
             {session ? (
               <>
                 <MenuItem href="/">Publication</MenuItem>
-                <MenuItem href="/todos/create">Create publication</MenuItem>
-                <MenuItem href="/categories">List des utilisateurs</MenuItem>
+                <MenuItem href="/create">Create publication</MenuItem>
+                <MenuItem href="/categories">Liste des utilisateurs</MenuItem>
                 <li>
                   <Button
                     variant="transparent"
