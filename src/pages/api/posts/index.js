@@ -12,7 +12,7 @@ const handle = mw({
     async ({ session, models: { PostModel }, req, res }) => {
       try {
         const userId = session.id
-
+        console.log("trigger")
         const postData = {
           ...req.body,
           user_id: userId,
