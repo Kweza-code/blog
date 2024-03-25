@@ -14,6 +14,7 @@ class UserModel extends BaseModel {
       properties: {
         id: { type: "integer" },
         email: { type: "string" },
+        username: { type: "string", minLength: 1, maxLength: 255 },
         passwordHash: { type: "string" },
         passwordSalt: { type: "string" },
         role: { type: "string", default: "user" },

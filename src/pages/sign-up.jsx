@@ -1,4 +1,8 @@
-import { emailValidator, passwordValidator } from "@/utils/validators"
+import {
+  emailValidator,
+  passwordValidator,
+  usernameValidator,
+} from "@/utils/validators"
 import Alert from "@/web/components/ui/Alert"
 import Form from "@/web/components/ui/Form"
 import FormField from "@/web/components/ui/FormField"
@@ -11,10 +15,12 @@ import { object } from "yup"
 
 const initialValues = {
   email: "",
+  username: "",
   password: "",
 }
 const validationSchema = object({
   email: emailValidator.label("E-mail"),
+  username: usernameValidator.label("Username"),
   password: passwordValidator.label("Password"),
 })
 const SignUpPage = () => {
@@ -49,6 +55,12 @@ const SignUpPage = () => {
         onSubmit={handleSubmit}
       >
         <Form>
+          <FormField
+            name="username"
+            type="text"
+            placeholder="Choose a username"
+            label="Username"
+          />
           <FormField
             name="email"
             type="email"
