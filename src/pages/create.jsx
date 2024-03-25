@@ -3,21 +3,24 @@ import { useMutation } from "@tanstack/react-query"
 import apiClient from "@/web/services/apiClient"
 import { useRouter } from "next/router"
 
-const CreatePage = () => {
+const Create = () => {
   const [title, setTitle] = useState("")
   const [content, setContent] = useState("")
   const router = useRouter()
 
   const createPostMutation = useMutation({
-    mutationFn: (newPost) => apiClient.post("/posts/1", newPost),
+    mutationFn: (newPost) => apiClient.post("/posts", newPost),
     onSuccess: () => {
       router.push("/")
     },
   })
 
-  const handleSubmit = async (event) => {
+  const handleSubmit = (event) => {
     event.preventDefault()
-    createPostMutation.mutate({ title, content })
+    createPostMutation.mutate({
+      title,
+      content,
+    })
   }
 
   return (
@@ -67,4 +70,4 @@ const CreatePage = () => {
   )
 }
 
-export default CreatePage
+export default Create

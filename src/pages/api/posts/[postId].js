@@ -1,4 +1,5 @@
 import mw from "@/api/mw"
+import auth from "@/api/middlewares/auth"
 
 const handle = mw({
   GET: [
@@ -16,37 +17,28 @@ const handle = mw({
       res.send(post)
     },
   ],
-  POST: [
-    async ({ models: { PostModel }, req: { body }, res }) => {
-      const newPost = await PostModel.query().insertGraph(body)
-      res.status(201).send(newPost)
-    },
-  ],
-  PATCH: [
-    async ({
-      models: { PostModel },
-      req: {
-        body,
-        query: { postId },
-      },
-      res,
-    }) => {
-      const updatedPost = await PostModel.query()
-        .patchAndFetchById(postId, body)
-        .throwIfNotFound()
-      res.send(updatedPost)
-    },
-  ],
+
   DELETE: [
-    async ({
-      models: { PostModel },
-      req: {
-        query: { postId },
-      },
-      res,
-    }) => {
-      await PostModel.query().deleteById(postId)
-      res.status(204).send()
+    auth,
+    async ({ session, models: { PostModel }, req, res }) => {
+      const { postId } = req.query
+      const userId = session.id
+
+      try {
+        const post = await PostModel.query().findById(postId)
+
+        if (!post || post.user_id !== userId) {
+          return res
+            .status(HTTP_ERRORS.NOT_FOUND)
+            .json({ error: "Delete not possible" })
+        }
+
+        await PostModel.query().deleteById(postId)
+        res.status(204).send()
+      } catch (error) {
+        console.error(error)
+        res.status(500).json({ error: "Internal server error" })
+      }
     },
   ],
 })
