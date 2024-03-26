@@ -2,6 +2,7 @@ import Loader from "@/web/components/ui/Loader"
 import apiClient from "@/web/services/apiClient"
 import { useMutation, useQuery } from "@tanstack/react-query"
 import { useSession } from "@/web/components/SessionContext"
+import { useRouter } from "next/router"
 
 export const getServerSideProps = async () => {
   const data = await apiClient.get("/posts")
@@ -12,6 +13,7 @@ export const getServerSideProps = async () => {
 
 const IndexPage = ({ initialData }) => {
   const { session } = useSession()
+  const router = useRouter()
 
   const { isFetching, refetch } = useQuery({
     queryKey: ["posts"],
@@ -26,6 +28,9 @@ const IndexPage = ({ initialData }) => {
       refetch()
     },
   })
+  const handleEditClick = (id) => {
+    router.push(`/patch/${id}`)
+  }
 
   const handleDelete = async (postId) => {
     if (window.confirm("Are you sure you want to delete this post?")) {
@@ -45,15 +50,23 @@ const IndexPage = ({ initialData }) => {
             <h3 className="text-xl font-semibold">{post.title}</h3>
             <p className="text-gray-700">{post.content}</p>
             <p className="text-gray-500 text-sm mt-2">
-              <Author></Author>: {post.authorUsername}
+              Auteur: {post.authorUsername}
             </p>{" "}
             {session && session.id === post.user_id && (
-              <button
-                className="mt-4 bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
-                onClick={() => handleDelete(post.id)}
-              >
-                Delete
-              </button>
+              <div className="flex space-x-2">
+                <button
+                  className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                  onClick={() => handleEditClick(post.id)}
+                >
+                  Edit
+                </button>
+                <button
+                  className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+                  onClick={() => handleDelete(post.id)}
+                >
+                  Delete
+                </button>
+              </div>
             )}
           </li>
         ))}
