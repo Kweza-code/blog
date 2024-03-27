@@ -43,6 +43,30 @@ const handle = mw({
       res.send({ result: true })
     },
   ],
+  PATCH: [
+    auth,
+    validate({
+      body: {
+        email: emailValidator.optional(),
+        username: usernameValidator.optional(),
+      },
+    }),
+    async ({ session, input: { body }, models: { UserModel }, res }) => {
+      const userId = session.userId
+
+      const user = await UserModel.query().findById(userId)
+      if (!user) {
+        return res.status(404).send({ error: "User not found" })
+      }
+
+      const updatedUser = await UserModel.query().patchAndFetchById(
+        userId,
+        body,
+      )
+
+      res.send({ result: updatedUser })
+    },
+  ],
 })
 
 export default handle

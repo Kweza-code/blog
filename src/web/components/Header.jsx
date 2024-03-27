@@ -26,7 +26,8 @@ const Header = () => {
               <>
                 <MenuItem href="/">Publication</MenuItem>
                 <MenuItem href="/create">Create publication</MenuItem>
-                <MenuItem href="/dashboard">Users Dashboard</MenuItem>
+                <MenuItem href="/dashboard">Admin Dashboard</MenuItem>
+                <MenuItem href="/profil">Profil</MenuItem>
                 <li>
                   <Button
                     variant="transparent"
