@@ -1,6 +1,8 @@
 import mw from "@/api/mw"
 import auth from "@/api/middlewares/auth"
 
+
+
 const handle = mw({
   GET: [
     async ({
@@ -22,14 +24,14 @@ const handle = mw({
     auth,
     async ({ session, models: { PostModel }, req, res }) => {
       const { postId } = req.query
-      const userId = session.id
+      const { id: userId, role } = session
 
       try {
         const post = await PostModel.query().findById(postId)
         if (!post) {
           return res.status(404).json({ error: "Post not found" })
         }
-        if (post.user_id !== userId) {
+        if (role !== "admin" && post.user_id !== userId) {
           return res.status(403).json({ error: "Not authorized" })
         }
         const updatedPost = await PostModel.query().patchAndFetchById(
@@ -48,12 +50,12 @@ const handle = mw({
     auth,
     async ({ session, models: { PostModel }, req, res }) => {
       const { postId } = req.query
-      const userId = session.id
+      const { id: userId, role } = session
 
       try {
         const post = await PostModel.query().findById(postId)
 
-        if (!post || post.user_id !== userId) {
+        if (role !== "admin" && post.user_id !== userId) {
           return res
             .status(HTTP_ERRORS.NOT_FOUND)
             .json({ error: "Delete not possible" })

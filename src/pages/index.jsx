@@ -28,6 +28,7 @@ const IndexPage = ({ initialData }) => {
       refetch()
     },
   })
+
   const handleEditClick = (id) => {
     router.push(`/patch/${id}`)
   }
@@ -51,23 +52,25 @@ const IndexPage = ({ initialData }) => {
             <p className="text-gray-700">{post.content}</p>
             <p className="text-gray-500 text-sm mt-2">
               Auteur: {post.authorUsername}
-            </p>{" "}
-            {session && session.id === post.user_id && (
-              <div className="flex space-x-2">
-                <button
-                  className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-                  onClick={() => handleEditClick(post.id)}
-                >
-                  Edit
-                </button>
-                <button
-                  className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
-                  onClick={() => handleDelete(post.id)}
-                >
-                  Delete
-                </button>
-              </div>
-            )}
+            </p>
+
+            {session &&
+              (session.role === "admin" || session.id === post.user_id) && (
+                <div className="flex space-x-2">
+                  <button
+                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                    onClick={() => handleEditClick(post.id)}
+                  >
+                    Edit
+                  </button>
+                  <button
+                    className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+                    onClick={() => handleDelete(post.id)}
+                  >
+                    Delete
+                  </button>
+                </div>
+              )}
           </li>
         ))}
       </ul>
