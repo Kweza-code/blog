@@ -13,7 +13,7 @@ const validationSchema = Yup.object({
 
 const Profile = () => {
   const { session } = useSession()
-  const router = useRouter()
+
   console.log(session.userId)
   console.log(session.username)
   const updateUsernameMutation = useMutation({
@@ -24,9 +24,7 @@ const Profile = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-xl font-semibold mb-4">
-        Changer le nom d'utilisateur
-      </h1>
+      <h1 className="text-xl font-semibold mb-4">Change username</h1>
       <Formik
         initialValues={{ username: session.username || "" }}
         validationSchema={validationSchema}
@@ -39,10 +37,10 @@ const Profile = () => {
           <FormField
             name="username"
             type="text"
-            label="Nouveau nom d'utilisateur"
-            placeholder="Entrez votre nouveau nom d'utilisateur"
+            label="New username"
+            placeholder="Please enter your new username here"
           />
-          <SubmitButton type="submit">Mettre à jour</SubmitButton>
+          <SubmitButton type="submit">Udating username</SubmitButton>
         </Form>
       </Formik>
     </div>

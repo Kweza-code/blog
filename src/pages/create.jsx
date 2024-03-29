@@ -23,7 +23,7 @@ const Create = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-xl font-semibold mb-4">Créer un nouveau post</h1>
+      <h1 className="text-xl font-semibold mb-4">Create a new post</h1>
       <Formik
         initialValues={{ title: "", content: "" }}
         validationSchema={validationSchema}
